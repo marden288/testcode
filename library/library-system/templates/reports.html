@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports - NWU Library</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --maroon: #800000;
+            --dark-maroon: #5a0000;
+            --gold: #c5a028;
+        }
+        
+        body {
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
+                        url('https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?ixlib=rb-4.0.3');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+        
+        .navbar {
+            background: var(--maroon);
+            border-bottom: 3px solid var(--gold);
+        }
+        
+        .navbar-brand, .nav-link {
+            color: white !important;
+        }
+        
+        .nav-link:hover {
+            color: var(--gold) !important;
+        }
+        
+        .content-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+        }
+        
+        .content-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .btn-primary {
+            background: var(--maroon);
+            border: none;
+        }
+        
+        .table thead {
+            background: var(--maroon);
+            color: var(--gold);
+        }
+        
+        .footer {
+            background: var(--maroon);
+            color: white;
+            padding: 20px;
+            margin-top: 50px;
+            text-align: center;
+        }
+        
+        .page-header {
+            text-align: center;
+            color: white;
+            margin: 20px 0;
+        }
+        
+        .page-header h1 {
+            font-size: 2.5rem;
+            color: var(--gold);
+        }
+        
+        .stat-box {
+            background: var(--maroon);
+            color: white;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .stat-box h3 {
+            color: var(--gold);
+            margin-bottom: 10px;
+        }
+        
+        .stat-box .number {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        
+        canvas {
+            max-height: 300px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-university"></i> NWU Library System
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">
+                            <i class="fas fa-home"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/books">
+                            <i class="fas fa-book"></i> Books
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/members">
+                            <i class="fas fa-users"></i> Members
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/transactions">
+                            <i class="fas fa-exchange-alt"></i> Transactions
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/fines">
+                            <i class="fas fa-money-bill-wave"></i> Fines
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/reports">
+                            <i class="fas fa-chart-bar"></i> Reports
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container mt-4">
+        <div class="page-header">
+            <h1><i class="fas fa-chart-bar"></i> Library Reports</h1>
+            <p>Statistical reports and analytics</p>
+        </div>
+        
+        <!-- Statistics Summary -->
+        <div class="row">
+            <div class="col-md-3">
+                <div class="stat-box">
+                    <i class="fas fa-book fa-2x"></i>
+                    <h3>Total Books</h3>
+                    <div class="number">{{ stats.total_books }}</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-box">
+                    <i class="fas fa-users fa-2x"></i>
+                    <h3>Total Members</h3>
+                    <div class="number">{{ stats.total_members }}</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-box">
+                    <i class="fas fa-exchange-alt fa-2x"></i>
+                    <h3>Active Loans</h3>
+                    <div class="number">{{ stats.active_loans }}</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-box">
+                    <i class="fas fa-money-bill-wave fa-2x"></i>
+                    <h3>Total Fines</h3>
+                    <div class="number">₱{{ "%.2f"|format(stats.total_fines) }}</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="content-card">
+                    <h3><i class="fas fa-star"></i> Popular Books</h3>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>Title</th>
+                                    <th>Author</th>
+                                    <th>Times Borrowed</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for book in popular_books %}
+                                <tr>
+                                    <td>{{ loop.index }}</td>
+                                    <td><strong>{{ book.title }}</strong></td>
+                                    <td>{{ book.author }}</td>
+                                    <td><span class="badge bg-primary">{{ book.total_borrowed }}</span></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="content-card">
+                    <h3><i class="fas fa-chart-pie"></i> Library Statistics</h3>
+                    <canvas id="statsChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-12">
+                <div class="content-card">
+                    <h3><i class="fas fa-chart-line"></i> Key Metrics</h3>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="alert alert-info">
+                                <strong><i class="fas fa-chart-line"></i> Borrowing Rate:</strong><br>
+                                <span class="fs-3">{{ "%.1f"|format((stats.total_borrowed_books/stats.total_books*100) if stats.total_books > 0 else 0) }}%</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="alert alert-success">
+                                <strong><i class="fas fa-users"></i> Active Members:</strong><br>
+                                <span class="fs-3">{{ stats.active_members }} / {{ stats.total_members }}</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="alert alert-warning">
+                                <strong><i class="fas fa-clock"></i> Average Loan Duration:</strong><br>
+                                <span class="fs-3">14 Days</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <div class="container">
+            <p class="mb-0">&copy; 2024 Northwestern University - Ilocos Norte | Library Management System</p>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Create chart
+        const ctx = document.getElementById('statsChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: ['Books Available', 'Books Borrowed'],
+                datasets: [{
+                    data: [{{ stats.total_books - stats.total_borrowed_books }}, {{ stats.total_borrowed_books }}],
+                    backgroundColor: ['#800000', '#c5a028'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
